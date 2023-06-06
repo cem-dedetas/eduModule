@@ -3,6 +3,8 @@ import AgoraRTC, { IAgoraRTCClient, IRemoteAudioTrack, IRemoteVideoTrack, UID } 
 import { IAgoraRTCRemoteUser, ILocalAudioTrack, ILocalVideoTrack } from 'agora-rtc-sdk-ng';
 import { fetchToken } from '../services/authServices';
 import { getResourceID, startRecording, stopRecording } from '../services/recordingServices';
+import  mutedIcon  from '../assets/muted.png'
+import Header from '../components/Header';
 
 const appId = '51335c0cafd248d6b0e30d4a0f722e96';
 //const token = "00651335c0cafd248d6b0e30d4a0f722e96IADl2u1WImS8ngRHY2MpQmVYrwAWMy0V8A5wBIPBFwmUwKDfQtbSY0iIIgA4M+5Tl3hbZAQAAQCAUQEAAgCAUQEAAwCAUQEABACAUQEA";
@@ -38,30 +40,31 @@ const Call = () => {
 
 
     useEffect(() => {
-        if(isJoined){
-            for(let user of client.remoteUsers){
-            if(user.hasAudio){
-                client.subscribe(user, 'audio').then(()=>{
-                    const remoteAudioTrack = user.audioTrack;
-                    setRemoteUsers((prevRemoteUsers) => new Set([...prevRemoteUsers, user]));
-                    remoteAudioTrack?.play()
-                    
-                });
+        if (isJoined) {
+            for (let user of client.remoteUsers) {
+                if (user.hasAudio) {
+                    client.subscribe(user, 'audio').then(() => {
+                        const remoteAudioTrack = user.audioTrack;
+                        setRemoteUsers((prevRemoteUsers) => new Set([...prevRemoteUsers, user]));
+                        remoteAudioTrack?.play()
+
+                    });
+                }
+                if (user.hasVideo) {
+                    client.subscribe(user, 'video').then(() => {
+                        const remoteVideoTrack = user.videoTrack;
+                        setRemoteUsers((prevRemoteUsers) => new Set([...prevRemoteUsers, user]));
+                        remoteVideoTrack?.play(document.getElementById(`remote-video-${user.uid}`) as HTMLVideoElement);
+
+                    });
+                }
+
+
             }
-            if(user.hasVideo){
-                client.subscribe(user, 'video').then(()=>{
-                    const remoteVideoTrack = user.videoTrack;
-                    setRemoteUsers((prevRemoteUsers) => new Set([...prevRemoteUsers, user]));
-                    remoteVideoTrack?.play(document.getElementById(`remote-video-${user.uid}`) as HTMLVideoElement);
-                    
-                });
-            }
-            
-            
-        }}
-    },[remoteUsers])
+        }
+    }, [remoteUsers])
     const joinRTC = async () => {
-        if(isJoined){
+        if (isJoined) {
             if (isScreenSharing) {
                 // Stop screen sharing
                 screenShareTrack?.stop();
@@ -70,20 +73,20 @@ const Call = () => {
                 localVideoTrack?.stop();
                 setScreenShareTrack(undefined);
                 // Enable camera video track
-    
+
                 localVideoTrack?.setEnabled(false);
                 if (localVideoTrack) client?.unpublish([localVideoTrack])
                 setLocalVideoTrack(undefined)
                 setIsScreenSharing(false);
             }
-            if(!isMuted){
+            if (!isMuted) {
                 localAudioTrack?.setMuted(true);
                 setIsMuted(true);
                 client?.unpublish(localAudioTrack)
                 localAudioTrack?.close()
                 setLocalAudioTrack(undefined);
             }
-            if(isScreenSharing || !isVideoOff){
+            if (isScreenSharing || !isVideoOff) {
                 client?.unpublish([localVideoTrack])
 
                 localVideoTrack.setEnabled(false);
@@ -97,53 +100,60 @@ const Call = () => {
         const agoraClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
         setClient(agoraClient);
 
-        
-        const token = await fetchToken(channel,localUID);
-        console.log("__TOKEN:",token)
-            
+
+        const token = await fetchToken(channel, localUID);
+        console.log("__TOKEN:", token)
+
         agoraClient.join(appId, channel, token, `${localUID}`).then((uid: number | string) => {
             setIsJoined(true);
             setRemoteUsers((prevRemoteUsers) => new Set([...prevRemoteUsers, ...agoraClient.remoteUsers]));
-            
+
         });
         // Join the channel
-        
+
 
         // Subscribe to remote users
         agoraClient.on('user-published', async (user, mediaType) => {
-            console.log("DEBUG:", user);
+            // console.log("DEBUG:", user);
             await agoraClient.subscribe(user, mediaType);
-            if (mediaType === 'video') {
-                const remoteVideoTrack = user.videoTrack;
             setRemoteUsers((prevRemoteUsers) => new Set([...prevRemoteUsers, user]));
-                remoteVideoTrack?.play(document.getElementById(`remote-video-${user.uid}`) as HTMLVideoElement);
-            }
-            if (mediaType === 'audio') {
-                const remoteAudioTrack = user.audioTrack;
-                setRemoteUsers((prevRemoteUsers) => new Set([...prevRemoteUsers, user]));
-                remoteAudioTrack?.play()
-            }
+            // if (mediaType === 'video') {
+            //     const remoteVideoTrack = user.videoTrack;
+            // setRemoteUsers((prevRemoteUsers) => new Set([...prevRemoteUsers, user]));
+            //     remoteVideoTrack?.play(document.getElementById(`remote-video-${user.uid}`) as HTMLVideoElement);
+            // }
+            // if (mediaType === 'audio') {
+            //     const remoteAudioTrack = user.audioTrack;
+            //     setRemoteUsers((prevRemoteUsers) => new Set([...prevRemoteUsers, user]));
+            //     remoteAudioTrack?.play()
+            // }
         });
 
         agoraClient.on('user-unpublished', (user, mediaType) => {
             if (mediaType === 'video') {
-                setRemoteUsers((prevRemoteUsers) =>
-                new Set((Array.from(prevRemoteUsers)).filter((remoteUser) => remoteUser.uid !== user.uid))
-                );
+                const remoteVideoTrack = user.videoTrack;
+                remoteVideoTrack?.stop();
             }
         });
+        agoraClient.on('user-left', (user) => {
+            setRemoteUsers((prevRemoteUsers) => {
+                prevRemoteUsers.delete(user);
+                return new Set([...prevRemoteUsers]);
+            });
+        });
+        
         agoraClient.on("user-joined", (user: IAgoraRTCRemoteUser) => {
+            setRemoteUsers((prevRemoteUsers) => new Set([...prevRemoteUsers, user]));
+            // if (user.hasAudio) {
+            //     const remoteVideoTrack = user.videoTrack;
 
-            if (user.hasAudio) {
-                const remoteVideoTrack = user.videoTrack;
-                setRemoteUsers((prevRemoteUsers) => new Set([...prevRemoteUsers, user]));
-                remoteVideoTrack?.play(document.getElementById(`remote-video-${user.uid}`) as HTMLVideoElement);
-            }
-            if (user.hasAudio) {
-                const remoteAudioTrack = user.audioTrack;
-                setRemoteUsers((prevRemoteUsers) => new Set([...prevRemoteUsers, user]));
-                remoteAudioTrack?.play()
-            }
+            //     remoteVideoTrack?.play(document.getElementById(`remote-video-${user.uid}`) as HTMLVideoElement);
+            // }
+            // if (user.hasAudio) {
+            //     const remoteAudioTrack = user.audioTrack;
+            //     setRemoteUsers((prevRemoteUsers) => new Set([...prevRemoteUsers, user]));
+            //     remoteAudioTrack?.play()
+            // }
         })
         console.log(agoraClient.remoteUsers)
         // return () => {
@@ -244,17 +254,22 @@ const Call = () => {
                 };
 
                 AgoraRTC.createScreenVideoTrack(config, "disable").then((screenShareTrack) => {
-                    // Replace camera video track with screen share track
-                    if (localVideoTrack) {
+                    //replace camera track with screen track if camera track is enabled
+                    if (!isVideoOff) {
+                        client?.unpublish([localVideoTrack])
                         localVideoTrack.setEnabled(false);
-                        client?.unpublish([localVideoTrack]);
+                        localVideoTrack.close();
+                        setIsVideoOff(true);
                         setLocalVideoTrack(undefined)
                     }
-                    client?.publish([screenShareTrack]);
-                    setLocalVideoTrack(screenShareTrack);
-                    screenShareTrack.play(videoRef.current as HTMLElement)
-                    setIsScreenSharing(true);
-                    setIsVideoOff(true);
+                    client?.publish([screenShareTrack]).then(() => {
+                        setScreenShareTrack(screenShareTrack);
+                        screenShareTrack.play(videoRef.current as HTMLVideoElement);
+                        setIsScreenSharing(true);
+                    }
+                    );
+
+                    
                 });
 
 
@@ -265,43 +280,43 @@ const Call = () => {
     };
 
     const handleRecording = async () => {
-        if(!isRecording){
+        if (!isRecording) {
             //get resource id
             const _recorderUID = Math.floor(Math.random() * 99999);
-            const rid = await getResourceID(channel,_recorderUID);
+            const rid = await getResourceID(channel, _recorderUID);
             setResourceId(rid)
             //set ^
 
             const users = client.remoteUsers;
-            let userIDs:Set<string> = new Set<string>();
+            let userIDs: Set<string> = new Set<string>();
             userIDs.add(`${localUID}`);
-            for (let userdetails of users ){
-                if(userdetails.hasVideo || userdetails.hasAudio){
+            for (let userdetails of users) {
+                if (userdetails.hasVideo || userdetails.hasAudio) {
                     userIDs.add(`${userdetails.uid}`);
                 }
             }
 
             //get attandeeList
             const array = Array.from(userIDs);
-            const _recorderToken = await fetchToken(channel,_recorderUID);
+            const _recorderToken = await fetchToken(channel, _recorderUID);
 
             setrecorderToken(recorderToken);
             setrecorderUID(`${_recorderUID}`);
-            
-            const response = await startRecording(channel,`${_recorderUID}`,rid,array,_recorderToken);
-            if(response){
+
+            const response = await startRecording(channel, `${_recorderUID}`, rid, array, _recorderToken);
+            if (response) {
                 setIsRecording(true);
                 setSID(response.sid);
-                console.log("___",response);
+                console.log("___", response);
             }
-            
+
             //start recording
             //set recordingid
         }
-        else{
+        else {
             //get recordingid
-            const response = await stopRecording(channel,recorderUID,resourseId,sid);
-            console.log("___STOP__",response)
+            const response = await stopRecording(channel, recorderUID, resourseId, sid);
+            console.log("___STOP__", response)
             //stoprecording
             //verifyupload
             //return vod url
@@ -312,48 +327,58 @@ const Call = () => {
         return (
             <div className="w3-row">
                 {Array.from(remoteUsers).map((user) => (
-                    <div id="remote-player" key={user.uid} className="col-md-6">
-                        <div id={`player-${user.uid}`} />
-                        <h4><b>{`Remote user: ${user.uid} ${(user.hasVideo)}`}</b></h4>
-                        {(user.hasVideo)?<video id={`remote-video-${user.uid}`} autoPlay playsInline />:
-                        <div className="w3-card-4 w3-margin w3-white">
-                            <img src="https://www.w3schools.com/w3images/avatar2.png" alt="Avatar" style={{ width: '100%' }} />
-                        </div>
-                        }
+                        <div className='w3-card w3-quarter w3-margin-right w3-margin-bottom'>
+                        <div id={`player-${user.uid}`} key={user.uid} className=" w3-display-container w3-hover-text w3-dark-grey " style={{width:"100%", aspectRatio:4/3}}>
+                        
+                            <div className="w3-display-bottomleft w3-container ">
+                                <span className="hidden-text w3-text-white">{`User${user.uid} ${(user.hasAudio && user.audioTrack.isPlaying)}`}</span>
+                            </div>
+                            <div className="w3-display-topright w3-container ">
+                                {(!(user.hasAudio && user.audioTrack.isPlaying)) ? <img className='w3-margin-top w3-right' src={mutedIcon} alt="muted" style={{width:"50%", height:"50%"}}/>:<></>}
+                            </div>
+                            {/* {(user.hasAudio && user.audioTrack.isPlaying) ? <div className="w3-cell-bottom w3-right w3-container "><span className="w3-text-white">MIC</span></div>:<></>} */}
+                            {(user.hasVideo) ? 
+                                    <video id={`remote-video-${user.uid}`} autoPlay playsInline style={{width:"100%"}}/> : 
+                                    <div className='w3-display-middle center-div'>
+                                        <img src="https://www.w3schools.com/w3images/avatar2.png" alt="Avatar" style={{ verticalAlign:'middle',width:'25%', height:'25%',borderRadius:'50%' }} />
+                                    </div>          
+                            }
 
+                        
+                    </div>
                     </div>
                 ))}
             </div>
         );
     };
-//what is the width and height of 360p:
+    //what is the width and height of 360p:
     return (
         <div className="w3-container">
+            <Header></Header>
             <div className="w3-row">
-                <div className="w3-col s12 m8 l9">
+            <div className="w3-col s12 m8 l9">
                     <video ref={videoRef} className="w3-margin-bottom" style={{ maxHeight: '360px', maxWidth: '640px' }} autoPlay playsInline />
-                    {renderRemoteUsers()}
-
-
+    
                 </div>
                 <div className="w3-col s12 m4 l3">
-                    <button className="w3-button w3-block w3-margin-bottom" onClick={toggleMute}>
+                    <button className="w3-button w3-block w3-border w3-margin-bottom" onClick={toggleMute}>
                         {isMuted ? 'Unmute' : 'Mute'}
                     </button>
-                    <button className="w3-button w3-block w3-margin-bottom" onClick={toggleVideo}>
+                    <button className="w3-button w3-block w3-border w3-margin-bottom" onClick={toggleVideo}>
                         {isVideoOff ? 'Start Video' : 'Stop Video'}
                     </button>
-                    <button className="w3-button w3-block" onClick={toggleScreenShare}>
+                    <button className="w3-button w3-border w3-border w3-block w3-margin-bottom" onClick={toggleScreenShare}>
                         {isScreenSharing ? 'Stop Screen Share' : 'Start Screen Share'}
                     </button>
-                    <button className="w3-button w3-block" onClick={joinRTC}>
+                    <button className="w3-button w3-border w3-block w3-margin-bottom" onClick={joinRTC}>
                         {isJoined ? 'Leave' : 'Join'}
                     </button>
-                    <button className="w3-button w3-block" onClick={handleRecording}>
+                    <button className="w3-button w3-border w3-block w3-margin-bottom" onClick={handleRecording}>
                         {isRecording ? 'Stop Recording' : 'Start Recording'}
                     </button>
                 </div>
             </div>
+                    {renderRemoteUsers()}
         </div>
     );
 };
