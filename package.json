@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://cem-dedetas.github.io/eduModule",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -10,6 +11,9 @@
   },
   "dependencies": {
     "agora-rtc-sdk-ng": "^4.17.1",
+    "agora-rtm-sdk": "^1.6.0-205",
+    "hls.js": "^1.4.6",
+    "jwt-decode": "^3.1.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.10.0"
