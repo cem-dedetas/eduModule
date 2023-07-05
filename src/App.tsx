@@ -16,7 +16,7 @@ function App() {
   return (
     <BrowserRouter basename="/eduModule">
       <Routes>
-        <Route path="/" element={<AuthPage />} />
+        
         <Route element={<AuthGuard />} >
           <Route path="/stream/:channelCode" element={<StreamPage/>} />
           <Route path="/prejoin/:channelCode" element={<Prejoin/>} />
@@ -25,6 +25,7 @@ function App() {
           <Route path="/courses" element={<Courses />} />
           <Route path="/analytics" element={<Analytics />} />
         </Route>
+        <Route path="*" element={<AuthPage />} />
         {/* <Route path='*' element={ <NotFound/>} /> */}
       </Routes>
     </BrowserRouter>

@@ -1,6 +1,6 @@
 import { sendRequest } from "./fetchMiddleware";
 
-const BASEURL = 'http://localhost:5172';
+const BASEURL = 'http://3.82.92.7';
 
 
 

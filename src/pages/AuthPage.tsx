@@ -24,7 +24,7 @@ const AuthPage = () => {
       console.log(err);
       setLoading(false);
       clearFields();
-      alert("Login failed");
+      alert("Login failed...");
     }
     )
   }

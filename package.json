@@ -6,6 +6,7 @@
   "homepage": "https://cem-dedetas.github.io/eduModule",
   "scripts": {
     "dev": "vite",
+    "host": "vite --host",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
@@ -16,7 +17,8 @@
     "jwt-decode": "^3.1.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.10.0"
+    "react-router-dom": "^6.10.0",
+    "vue-router": "^4.2.2"
   },
   "devDependencies": {
     "@types/react": "^18.0.28",

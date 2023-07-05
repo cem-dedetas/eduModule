@@ -125,9 +125,15 @@ const Call: React.FC = () => {
             remoteAudioTrack?.play()
         }
         if (user.hasVideo) {
-            console.log("___USER:", user, "_____")
+            console.log("___USER:", user, "_____",channelInfo)
             const remoteVideoTrack = user.videoTrack;
-            remoteVideoTrack?.play(document.getElementById(`remote-video-${user.uid}`) as HTMLVideoElement);
+            if(user.uid == channelInfo.lecturer.id) {
+                //set to videoref
+                remoteVideoTrack?.play(videoRef.current as HTMLVideoElement);
+            }
+            else{
+                remoteVideoTrack?.play(document.getElementById(`remote-video-${user.uid}`) as HTMLVideoElement);
+            }
         }
         // setRemoteUsers((prevRemoteUsers) => [...prevRemoteUsers, user as IUser]);
 
@@ -146,7 +152,14 @@ const Call: React.FC = () => {
                 if (user.hasVideo) {
                     client.subscribe(user, 'video').then(() => {
                         const remoteVideoTrack = user.videoTrack;
-                        remoteVideoTrack?.play(document.getElementById(`remote-video-${user.uid}`) as HTMLVideoElement);
+                        console.log("___USER:", user, "_____",channelInfo)
+                        if(user.uid == channelInfo.lecturer.id) {
+                            //set to videoref
+                            remoteVideoTrack?.play(videoRef.current as HTMLVideoElement);
+                        }
+                        else{
+                            remoteVideoTrack?.play(document.getElementById(`remote-video-${user.uid}`) as HTMLVideoElement);
+                        }
 
                     });
                 }
@@ -347,7 +360,15 @@ const Call: React.FC = () => {
 
                 agoraClient.subscribe(user, 'video').then(() => {
                     const remoteVideoTrack = user.videoTrack;
-                    remoteVideoTrack?.play(document.getElementById(`remote-video-${user.uid}`) as HTMLVideoElement);
+                    console.log("___USER:", user, "_____",channelInfo)
+                    if(user.uid == channelInfo.lecturer.id) {
+                        //set to videoref
+                        remoteVideoTrack?.play(videoRef.current as HTMLVideoElement);
+                    }
+                    else{
+                        remoteVideoTrack?.play(document.getElementById(`remote-video-${user.uid}`) as HTMLVideoElement);
+                    }
+                    
                 });
             }
             // setRemoteUsers((prevRemoteUsers) => [...prevRemoteUsers, user as IUser]);
@@ -537,6 +558,7 @@ const Call: React.FC = () => {
                 setSID(response.sid);
                 console.log("___", response);
                 sendRecordingInfo(channelInfo.channelName,`${_recorderUID}`,response.resourceId, response.sid );
+                sendChatMessage(`Recording started`)
             }
 
             
@@ -551,6 +573,7 @@ const Call: React.FC = () => {
                 setIsRecording(false);
                 console.log("___", response);
                 setUrl(channelInfo.channelName,sid,response.serverResponse?.fileList);
+                sendChatMessage(`Recording uploaded, file: ${response.serverResponse?.fileList}`)
             }
             
             //stoprecording
@@ -596,12 +619,12 @@ const Call: React.FC = () => {
                 chatMessages={chatMessages}
                 sendChatMessage={sendChatMessage}
             />
-
-            {renderRemoteUsers()}
-            {(isScreenSharing || !isVideoOff)?<div className="w3-container w3-padding-small w3-round w3-card w3-grey w3-right">
-                <video ref={videoRef} className="w3-margin" style={{ maxHeight: '240px' }} autoPlay playsInline />
+            {(true)?<div className="w3-container w3-padding-small w3-round w3-card w3-grey w3-margin-bottom">
+                <video ref={videoRef} className="w3-margin" style={{ maxHeight: '720px' }} autoPlay playsInline />
 
             </div>:<> </>}
+            {renderRemoteUsers()}
+            
 
             <CommsButtons
                 toggleMute={toggleMute}

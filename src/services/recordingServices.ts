@@ -1,6 +1,6 @@
 import { sendRequest } from "./fetchMiddleware";
 
-const BASEURL = 'http://localhost:5172';
+const BASEURL = 'http://3.82.92.7';
 
 const getResourceID = async (channelName:string, uid:number) => {
     const response = await fetch(`${BASEURL}/record/getResourceID/${channelName}/${uid}`,{

@@ -74,15 +74,15 @@ const Courses: React.FC = () => {
               {courses.map((course) => (
                 <div key={course.filename} className="w3-col l3 m6 w3-margin-bottom">
                   <div className='w3-col l3 m6 w3-margin-bottom'>
-              <div className='w3-card w3-margin'>
+              <div className='w3-card w3-margin w3-light-grey w3-padding w3-card w3-round' style={{minWidth:'300px'}}>
                 {/* <img src={`https://edu-recordings.s3.amazonaws.com/${course.filename}`} alt={course.name} style={{ width: '100%' }} /> */}
 
-                <div className='w3-container w3-padding'>
+                <div className='w3-container w3-round' >
                   <h4>{course.name}</h4>
                   <p>Lecturer: {course.lecturer}</p>
                   <p>Length: {course.length}</p>
 
-                  <button className='w3-button w3-blue' onClick={() => handleJoin(course.filename)}>
+                  <button className='w3-button w3-blue ' onClick={() => handleJoin(course.filename)}>
                     Join Course
                   </button>
                 </div>
