@@ -2,10 +2,14 @@ import React, { useEffect, useRef } from 'react';
 import Hls from 'hls.js';
 import { useParams } from 'react-router-dom';
 import Headers from '../components/Header';
+import { pingSession } from '../services/sessionServices';
+
+const MINUTE_MS = 60000;
 
 const Player: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { videoName } = useParams();
+  const { videoName,channelCode } = useParams();
+  const [count, setCount] = React.useState(0);
   const videoUrl = `https://edu-recordings.s3.amazonaws.com/${videoName}.m3u8`;
   useEffect(() => {
     let hls: Hls | null = null;
@@ -27,6 +31,20 @@ const Player: React.FC = () => {
       }
     };
   }, [videoUrl]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+        pingSession(channelCode).then((res) => {
+            console.log('pinged',res);
+        }
+        ).catch((err) => {
+            console.log(err);
+        }
+        )
+        setCount(prevCount => prevCount + 1);
+    }, MINUTE_MS);
+    return () => clearInterval(interval);
+}, [count]); 
 
   return (
     <div className="w3-container">

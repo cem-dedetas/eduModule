@@ -12,10 +12,6 @@ const createSession = async (channelName:string) => {
     return await sendRequest(`/liveLecture/create/${channelName}`,'GET');
 }
 
-const joinSession = async (channelCode:string) => {
-    return await sendRequest(`/liveLecture/${channelCode}/userJoin`,'POST',{});
-}
-
 
 const pingSession = async (channelCode:string) => {
     return await sendRequest(`/liveLecture/${channelCode}/userPing`,'POST',{});
@@ -33,4 +29,4 @@ const getUser = async (userId:string) => {
 const uploadChatMessage = async (channelCode:string, message:chatMessage) => {
     return await sendRequest(`/liveLecture/${channelCode}/chat/addMessage`,'POST',message);
 }
-export {createSession, getSessionInfo, joinSession, pingSession, getUser, uploadChatMessage};
+export {createSession, getSessionInfo, pingSession, getUser, uploadChatMessage};

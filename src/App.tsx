@@ -20,10 +20,10 @@ function App() {
         <Route element={<AuthGuard />} >
           <Route path="/stream/:channelCode" element={<StreamPage/>} />
           <Route path="/prejoin/:channelCode" element={<Prejoin/>} />
-          <Route path="/player/:videoName" element={<Player />} />
+          <Route path="/player/:videoName/:channelCode" element={<Player />} />
           <Route path="/join" element={<Join />} />
           <Route path="/courses" element={<Courses />} />
-          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/stats/:channelCode" element={<Analytics />} />
         </Route>
         <Route path="*" element={<AuthPage />} />
         {/* <Route path='*' element={ <NotFound/>} /> */}

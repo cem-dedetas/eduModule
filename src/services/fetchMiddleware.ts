@@ -1,4 +1,4 @@
-const BASEURL = 'http://3.82.92.7';
+const BASEURL = 'http://127.0.0.1:5172';
 
 
 const sendRequest = async (url:string, method:string, body?:any) => {

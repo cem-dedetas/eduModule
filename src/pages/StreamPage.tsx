@@ -8,7 +8,7 @@ import Header from '../components/Header';
 import CommsButtons from '../components/CommsButtons';
 import { useParams } from 'react-router-dom';
 import { decodetoken } from '../services/miscServices';
-import { getSessionInfo, getUser, joinSession, pingSession, uploadChatMessage } from '../services/sessionServices';
+import { getSessionInfo, getUser, pingSession, uploadChatMessage } from '../services/sessionServices';
 import LiveChat from '../components/LiveChat';
 import AgoraRTM from 'agora-rtm-sdk'
 
@@ -53,6 +53,7 @@ const Call: React.FC = () => {
     const [chatClient, setChatClient] = useState<any>();
     const [chatChannel, setChatChannel] = useState<any>();
     const [chatMessages, setChatMessages] = useState<chatMessage[]>([]);
+    const [count, setCount] = useState(0);
 
 
 
@@ -172,31 +173,25 @@ const Call: React.FC = () => {
 
     useEffect(() => {
         getChannelData();
-        //send join data
-        joinSession(channelCode).then((res) => {
-            console.log(res);
-        }
-        ).catch((err) => {
-            console.log(err);
-        }
-        )
 
-        //get channel data
-        // if (isJoined){
-        // const interval = setInterval(() => {
-        //     pingSession(channelCode).then((res) => {
-        //         console.log(res);
-        //     }
-        //     ).catch((err) => {
-        //         console.log(err);
-        //     }
-        //     )
-
-        // }, MINUTE_MS);
-
-        // return () => clearInterval(interval);}
+        // get channel data
+        
 
     }, []);
+
+    useEffect(() => {
+            const interval = setInterval(() => {
+                pingSession(channelCode).then((res) => {
+                    console.log('pinged',res);
+                }
+                ).catch((err) => {
+                    console.log(err);
+                }
+                )
+                setCount(prevCount => prevCount + 1);
+            }, MINUTE_MS);
+            return () => clearInterval(interval);
+      }, [count]); 
 
     const sendChatMessage = (message: string) => {
         chatChannel.sendMessage({ text: message }).then(() => {
