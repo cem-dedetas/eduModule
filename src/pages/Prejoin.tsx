@@ -8,7 +8,7 @@ import Header from '../components/Header';
 import { useNavigate, useParams } from 'react-router-dom';
 import SearchBar from '../components/TagDropdown';
 import AgoraRTC, { ILocalVideoTrack } from 'agora-rtc-sdk-ng';
-import { getSessionInfo, joinSession } from '../services/sessionServices';
+import { getSessionInfo } from '../services/sessionServices';
 import { decodetoken, getTags } from '../services/miscServices';
 
 const Prejoin:React.FC = () => {
@@ -105,17 +105,7 @@ const Prejoin:React.FC = () => {
   };
 
   const handleJoinCall = () => {
-    //update tags
-    
-    //send join ping to server
-    joinSession(channelCode).then((res)=>{
-      console.log(res);
-      navigate(`/stream/${channelCode}`);
-    }
-    ).catch((err)=>{
-      console.log(err);
-    }
-    )
+    navigate(`/stream/${channelCode}`);
   };
 
   const handleBack = () => {

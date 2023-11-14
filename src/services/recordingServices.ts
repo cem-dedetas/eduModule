@@ -1,6 +1,6 @@
 import { sendRequest } from "./fetchMiddleware";
 
-const BASEURL = 'http://3.82.92.7';
+const BASEURL = 'http://127.0.0.1:5172';
 
 const getResourceID = async (channelName:string, uid:number) => {
     const response = await fetch(`${BASEURL}/record/getResourceID/${channelName}/${uid}`,{
@@ -70,11 +70,34 @@ const setUrl = async (channelName:string,sid:string, url:string) => {
     );
 }
 
+const getChannelStats = async (channelCode:string) => {
+    return await sendRequest(`/stats/${channelCode}`,'GET'
+    );
+}
+
 const getLectureInfo = async () => {
     return await sendRequest(`/liveLecture/getAll`,'GET'
     );
 }
 
+const getLecture = async (channelCode:string) => {
+    return await sendRequest(`/liveLecture/get/${channelCode}`,'GET'
+    );
+}
+
+const getChatLog = async (channelCode:string) => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${BASEURL}/liveLecture/downloadChatLog/${channelCode}`,{
+        method:'GET',
+        headers:{
+            'Content-Type':'application/json',
+            'Authorization':`Bearer ${token}`
+        },
+    });
+    return await response.json();
+}
 
 
-export {getResourceID, startRecording, stopRecording,sendRecordingInfo, setUrl, getLectureInfo};
+
+
+export {getResourceID, startRecording, stopRecording,sendRecordingInfo, setUrl, getLectureInfo, getChannelStats, getLecture, getChatLog};
